@@ -15,7 +15,6 @@ tmux new-session -d -s virt -n vim -x $(tput cols) -y $(tput lines)
 
 tmux split-window -t virt:vim.right -h
 tmux send-keys -t virt:vim.right "gss" Enter
-tmux send-keys -t virt:vim.left "ssh Virtualization" Enter
 tmux send-keys -t virt:vim.left "clear" Enter
 
 if [ "$TMUX" = "" ];then
