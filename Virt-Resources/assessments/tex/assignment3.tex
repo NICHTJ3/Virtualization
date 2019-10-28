@@ -1,0 +1,46 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+%\usepackage{inconsolata}
+\usepackage{enumerate}
+\usepackage{hyperref}
+\usepackage{verbatim}
+\usepackage[parfill]{parskip}
+\usepackage[margin = 2.5cm]{geometry}
+
+\usepackage[T1]{fontenc}
+
+
+\begin{document}
+
+\title{Assignment 3: Docker \\ IN720 Virtualisation}
+\date{}
+\maketitle
+
+\section*{Introduction}
+In this assignment you will create a set of Docker containers to operate a highly available web site.  You will then deploy those containers to a Docker Swarm cluster using a Compose file
+
+This assignment is worth 25\% of your mark in this paper.
+
+\section{Create an nginx container}
+Create an nginx image using the same configuration that you used in lab 4.1 and check it into your Dockerhub account. You will launch three containers made from this image into your swarm.
+ 
+\section{Create application containers}
+Clone the GitHub repository \texttt{tclark/virt-assn1-app} into your own GitHub repository. Use it to create an application container image that is produced using an automated build on DockerHub. Make at least one small change to the application code and commit it to verify that your Docker image rebuilds automatically.
+
+You will launch three container instances built from this image into your swarm. Call this service \texttt{flaskapp} so that it matches the configuration from the nginx container. 
+
+\section{Create a Redis container}
+Deploy one instance of a standard Redis container into your swarm. Name this service \texttt{redis} to match the application servers' configuration.
+
+\section{Prepare a Docker Compose file}
+Write a Docker Compose file that will launch the application stack described above into a Docker swarm. Use Compose version 3 syntax. \textbf{Include a comment in the file with your full name.}
+
+\section{Submission}
+Email a copy of your Compose file to the lecturer by Friday, 15 November at 17:00.  Since your Compose file will identify the appropriate Dockerhub repositories (which will identify the relevant GitHub repository), it is not necessary to submit anything else directly. Just be sure that the relevant resources are available in their respective online locations.
+
+You will be assessed on the functionality of the stack that the lecturer will launch from your Compose file, along with the correctness of the associated container images and related resources.
+
+
+
+\end{document}

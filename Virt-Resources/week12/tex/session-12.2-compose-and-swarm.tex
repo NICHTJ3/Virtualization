@@ -1,0 +1,194 @@
+% Beamer slide template prepared by Tom Clark <tom.clark@op.ac.nz>
+% Otago Polytechnic
+% Dec 2012
+
+\documentclass[10pt]{beamer}
+\usetheme{Dunedin}
+\usepackage{graphicx}
+\usepackage{fancyvrb}
+
+\newcommand\codeHighlight[1]{\textcolor[rgb]{1,0,0}{\textbf{#1}}}
+
+\title{Compose and Swarm}
+
+\author[I720]{Virtualisation}
+\institute[Otago Polytechnic]{
+  Otago Polytechnic \\
+  Dunedin, New Zealand \\
+}
+\date{}
+\begin{document}
+
+%----------- titlepage ----------------------------------------------%
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+\begin{frame}
+  \frametitle{Part 1: Docker swarm}
+  
+  We've just been working on one Docker server. However, Docker is 
+  a service that listens on network interfaces. New versions have the 
+  capability to be joined with other docker servers over a network to
+  form a \emph{swarm}.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Forming a swarm}
+  
+  \begin{enumerate}
+    \item Initialise the swarm on one server. This server becomes a \emph{manager}.
+    \item Optionally, join additional managers to the swarm\footnote{Best practice is to limit the number of managers to 3-7.}.
+    \item Join \emph{workers} to the swarm.
+    \item On a manager node we may issue commands to control and monitor the swarm.
+  \end{enumerate}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Part 2: Compose and swarm}
+  
+  There are a few options for deploying containerised services on a swarm.
+  We will see how to use a Docker Compose file for this.
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{To some extent, it just works}
+  
+  Make a \texttt{docker-compose.yml} file, then run
+  
+  \begin{verbatim}
+  $ docker-compose up
+   \end{verbatim}
+   
+   There are some issues, however\footnote{You don't actually do it this way, though.}.
+\end{frame}
+
+\begin{frame}
+  \frametitle{First issue, building}
+   
+   \begin{itemize}
+     \item We saw that you can specify that Docker build an image in a Compose file.
+     \item But swarm needs images to be accessible in a registry.
+     \item So, building in a compose file used for swarm deployment is right out.
+     \item Really, when you're deploying to a production setting, you shouldn't be building on the fly anyway.
+   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Next issue, volumes}
+   
+   \begin{itemize}
+     \item We use volumes to let containers work directly with the host file system.
+     \item But we don't always know what host our containers will run upon.
+     \item If our container creates volumes, use named ones.
+     \item If our containers read from volumes, have other containers that populate them, then use a \texttt{volumes\_from} directive.
+   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Issue three: dependencies}
+   
+   The \texttt{depends\_on} directive in a compose file has a different meaning in a swarm context.
+   \begin{itemize}
+     \item We can create dependencies between containers
+              \begin{itemize}
+                \item Explicitly: \texttt{depends\_on}
+                \item Implicitly: \texttt{volumes\_from}
+              \end{itemize}
+         
+     \item In either case, Docker interprets this to mean that a container must be deployed on the same node as its dependencies.
+     \item In simple cases this works fine.
+     \item We need to be aware of this when scaling services. When scaling a service, we may need to scale its dependencies.
+   \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+    \frametitle{The tricky case: multiple dependencies}
+    
+    \begin{verbatim}
+version: "3.7"
+services:
+    svc_a:  
+        image: image_a
+        depends_on:
+            - svc_b
+            - svc_c
+    svc_b:  
+        image: image_b
+    svc_c:  
+        image: image_c
+    \end{verbatim}
+    
+    In this case, \texttt{svc\_a} must be deployed on a host that is already running \texttt{svc\_b} and \texttt{svc\_c}. But we aren't guaranteed that 
+    \texttt{svc\_b} and \texttt{svc\_c} will be placed together on the same host. There is a \texttt{constraints} directive available in Compose that helps deal with this.
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Replicas}
+    
+    We will see in the lab that we can run multiple replicas of a container on a swarm. We control this
+    by setting a \texttt{replicas} value in a \texttt{deploy} section.
+    
+    \begin{verbatim}
+    
+    services:
+      foo:
+        image: tclark/foo
+        deploy:
+          replicas: 3
+    
+
+    \end{verbatim}
+    
+   
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Final issue: networks}
+   
+   \begin{itemize}
+     \item We've seen that Docker can set up internal networks that allow containers to communicate and find each other by name.   
+     \item What happens when the containers are on seperate hosts?
+     \item We can get the same result by creating \emph{overlay networks}.
+   \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{In compose}
+     \begin{verbatim}
+networks:
+     foo:
+         driver: overlay
+     \end{verbatim}
+ \end{frame}
+ 
+ \begin{frame}[fragile]
+    \frametitle{Running your services}
+     \begin{verbatim}
+     
+docker stack deploy --compose-file <path to file> stack-name
+     
+     \end{verbatim}
+ \end{frame}
+ 
+ \begin{frame}
+  \frametitle{Final caveats}
+   
+   \begin{itemize}
+     \item This stuff is highly version-dependent.
+     \item Documentation is sometimes lacking and what's there can be confusing.
+     \item Stack Overflow does not care about you.
+   \end{itemize}
+   
+   Besides the Docker CLI and Compose File references on \url{https://docs.docker.com/}, the docs at
+   \url{https://docs.docker.com/engine/swarm/swarm-tutorial/} are useful for the information we looked at
+   here as well as other topics.
+   
+   
+   
+   \end{frame}    
+
+\end{document}
