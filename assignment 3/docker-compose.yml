@@ -9,7 +9,7 @@ services:
       - app
 
   flaskapp:
-    image: nichtj3/flaskapp
+    image: nichtj3/virt-flask-app
     networks:
       - app
     depends_on:
