@@ -9,7 +9,7 @@ services:
       - app
 
   flaskapp:
-    build: ./flaskapp
+    build: ./virt-flask-app
     image: nichtj3/flaskapp
     networks:
       - app
