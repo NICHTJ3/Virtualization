@@ -1,0 +1,30 @@
+###################
+# Trent Nicholson #
+###################
+version: "3.0"
+services:
+  redis:
+    image: redis
+    networks:
+      - app
+
+  flaskapp:
+    build: ./flaskapp
+    image: nichtj3/flaskapp
+    networks:
+      - app
+    depends_on:
+      - redis
+
+  nginx:
+    build: ./nginx
+    image: nichtj3/nginx
+    ports:
+      - 8080:80
+    networks:
+      - app
+    depends_on:
+      - flaskapp
+
+networks:
+  app:
